@@ -13,6 +13,7 @@ use App\DTOs\ProductFilterDTO;
 use App\QueryBuilders\ProductQueryBuilder;
 use Elastic\Elasticsearch\Client;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class ProductElasticSearchService implements ProductSearchServiceInterface
 {
@@ -28,14 +29,15 @@ class ProductElasticSearchService implements ProductSearchServiceInterface
             : null;
 
         if ($ids !== null && empty($ids)) {
-            return new LengthAwarePaginator([], 0, $dto->perPage);
+            return (new LengthAwarePaginator([], 0, $dto->perPage, Paginator::resolveCurrentPage()))
+                ->withQueryString();
         }
 
         $query = $ids !== null
             ? $this->queryBuilder->buildWithIds($dto, $ids)
             : $this->queryBuilder->build($dto);
 
-        return $query->paginate($dto->perPage);
+        return $query->paginate($dto->perPage)->withQueryString();
     }
 
     /**

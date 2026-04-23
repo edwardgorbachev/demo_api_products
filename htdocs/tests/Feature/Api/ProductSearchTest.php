@@ -53,6 +53,18 @@ class ProductSearchTest extends TestCase
         $this->assertSame('Смартфон Xiaomi', $response->json('data.0.name'));
     }
 
+    public function test_search_by_description(): void
+    {
+        Product::factory()->create(['name' => 'Товар А', 'description' => 'содержит слово телефон', 'category_id' => $this->category->id]);
+        Product::factory()->create(['name' => 'Товар Б', 'description' => 'совсем другое описание',  'category_id' => $this->category->id]);
+
+        $response = $this->getJson('/api/products?q=телефон')
+            ->assertOk();
+
+        $this->assertCount(1, $response->json('data'));
+        $this->assertSame('Товар А', $response->json('data.0.name'));
+    }
+
     // --- Фильтры ---
 
     public function test_filter_by_price_from(): void
@@ -212,6 +224,33 @@ class ProductSearchTest extends TestCase
         $this->getJson('/api/products?category_id=99999')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['category_id']);
+    }
+
+    // --- Пагинация ---
+
+    public function test_per_page_parameter(): void
+    {
+        Product::factory(5)->create(['category_id' => $this->category->id]);
+
+        $response = $this->getJson('/api/products?per_page=2')
+            ->assertOk();
+
+        $this->assertCount(2, $response->json('data'));
+        $this->assertSame(2, $response->json('meta.per_page'));
+        $this->assertSame(5, $response->json('meta.total'));
+    }
+
+    public function test_pagination_links_contain_query_params(): void
+    {
+        Product::factory(5)->create(['category_id' => $this->category->id, 'in_stock' => true]);
+
+        $response = $this->getJson('/api/products?per_page=2&in_stock=1')
+            ->assertOk();
+
+        $nextLink = $response->json('links.next');
+        $this->assertNotNull($nextLink);
+        $this->assertStringContainsString('per_page=2', $nextLink);
+        $this->assertStringContainsString('in_stock=1', $nextLink);
     }
 
     // --- Комбинации ---
