@@ -12,6 +12,9 @@ REST API для поиска и фильтрации товаров маркет
 ```bash
 cp htdocs/.env.example htdocs/.env
 docker compose up -d --build
+docker compose exec app composer install
+docker compose exec app chown -R www-data:www-data storage bootstrap/cache
+docker compose exec app chmod -R 775 storage bootstrap/cache
 docker compose exec app php artisan key:generate
 docker compose exec app php artisan migrate --seed
 ```
