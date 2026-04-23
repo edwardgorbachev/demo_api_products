@@ -1,0 +1,12 @@
+# Internal notes
+.wiki/
+
+# IDE
+.idea/
+.vscode/
+.nova/
+.zed/
+
+# OS
+.DS_Store
+Thumbs.db
