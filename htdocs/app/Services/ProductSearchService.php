@@ -17,6 +17,7 @@ class ProductSearchService implements ProductSearchServiceInterface
     {
         return $this->queryBuilder
             ->build($dto)
-            ->paginate($dto->perPage);
+            ->paginate($dto->perPage)
+            ->withQueryString();
     }
 }

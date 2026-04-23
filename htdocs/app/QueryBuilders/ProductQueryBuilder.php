@@ -52,7 +52,24 @@ class ProductQueryBuilder
             return;
         }
 
-        $query->where('name', 'like', '%' . $q . '%');
+        // Используется LIKE для совместимости с SQLite в feature-тестах.
+        // На MySQL/MariaDB с раздельными FULLTEXT-индексами на name и description
+        // можно использовать вычисляемый score с весами полей:
+        // $query->whereRaw(
+        //     'MATCH(name) AGAINST(? IN BOOLEAN MODE) OR MATCH(description) AGAINST(? IN BOOLEAN MODE)',
+        //     [$q . '*', $q . '*']
+        // )->orderByRaw(
+        //     'MATCH(name) AGAINST(? IN BOOLEAN MODE) * 3 + MATCH(description) AGAINST(? IN BOOLEAN MODE) DESC',
+        //     [$q . '*', $q . '*']
+        // );
+        // name весит в 3 раза больше description. Требует: $table->fullText('name') и $table->fullText('description').
+        $query->where(function (Builder $sub) use ($q) {
+            $sub->where('name', 'like', '%' . $q . '%')
+                ->orWhere('description', 'like', '%' . $q . '%');
+        });
+
+        // Совпадение в name приоритетнее, чем в description
+        $query->orderByRaw('CASE WHEN name LIKE ? THEN 0 ELSE 1 END', ['%' . $q . '%']);
     }
 
     private function applyPriceFilter(Builder $query, ?float $from, ?float $to): void
