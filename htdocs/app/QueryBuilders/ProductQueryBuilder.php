@@ -29,23 +29,6 @@ class ProductQueryBuilder
         return $query;
     }
 
-    public function buildWithIds(ProductFilterDTO $dto, array $ids): Builder
-    {
-        $query = Product::query()->with('category');
-
-        $query->whereIn('id', $ids);
-
-        $this->applyPriceFilter($query, $dto->priceFrom, $dto->priceTo);
-        $this->applyCategoryFilter($query, $dto->categoryId);
-        $this->applyStockFilter($query, $dto->inStock);
-        $this->applyRatingFilter($query, $dto->ratingFrom);
-
-        // Сохраняем порядок релевантности из ES
-        $query->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')');
-
-        return $query;
-    }
-
     private function applySearch(Builder $query, ?string $q): void
     {
         if ($q === null) {
