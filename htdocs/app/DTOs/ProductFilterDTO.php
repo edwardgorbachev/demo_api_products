@@ -20,14 +20,14 @@ final readonly class ProductFilterDTO
     public static function fromRequest(ProductFilterRequest $request): self
     {
         return new self(
-            q:           $request->filled('q') ? $request->str('q')->toString() : null,
-            priceFrom:   $request->filled('price_from') ? (float) $request->input('price_from') : null,
-            priceTo:     $request->filled('price_to') ? (float) $request->input('price_to') : null,
-            categoryId:  $request->filled('category_id') ? (int) $request->input('category_id') : null,
-            inStock:     $request->has('in_stock') ? $request->boolean('in_stock') : null,
-            ratingFrom:  $request->filled('rating_from') ? (float) $request->input('rating_from') : null,
-            sort:        $request->filled('sort') ? $request->str('sort')->toString() : null,
-            perPage:     (int) $request->input('per_page', 15),
+            q:          $request->filled('q')           ? $request->str('q')->toString()    : null,
+            priceFrom:  $request->filled('price_from')  ? $request->float('price_from')     : null,
+            priceTo:    $request->filled('price_to')    ? $request->float('price_to')       : null,
+            categoryId: $request->filled('category_id') ? $request->integer('category_id')  : null,
+            inStock:    $request->has('in_stock')       ? $request->boolean('in_stock')     : null,
+            ratingFrom: $request->filled('rating_from') ? $request->float('rating_from')    : null,
+            sort:       $request->filled('sort')        ? $request->str('sort')->toString()  : null,
+            perPage:    $request->integer('per_page', 15),
         );
     }
 }
